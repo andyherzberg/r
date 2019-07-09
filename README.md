@@ -1,6 +1,4 @@
-# r_notebooks
+# welcome
 
-In diesem Ordner befinden sich R Skripte und R Notebooks.
+In the [docs](https://github.com/andyherzberg/r/tree/master/docs) folder you'll find r scripts and r noteooks
 
-
-This site was built using [GitHub Pages](https://pages.github.com/).
