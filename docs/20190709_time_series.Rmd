@@ -31,11 +31,11 @@ At first we need to install and load all required libraries.
 library("ggplot2")
 library("forecast")
 library("tseries")
-library("tidyverse")
+#library("tidyverse")
 #library("rio")
-library("xts")
+#library("xts")
 library("dplyr")
-library("readxl") #in case we need to load an Excel file
+#library("readxl") #in case we need to load an Excel file
 ```
 
 The data for this analysis of the Air Quality Index can be downloaded here: https://www.epa.gov/outdoor-air-quality-data/download-daily-data. 
@@ -319,6 +319,7 @@ plot(fcast4)
 ### Sources 
 <a href="#top">back to top</a>
 
+ARIMA modelling in R: https://otexts.com/fpp2/arima-r.html <br>
 A Complete Tutorial on Time Series Modeling in R: https://www.analyticsvidhya.com/blog/2015/12/complete-tutorial-time-series-modeling/ <br>
 ARIMA Forecasting in R Part 1 - Exploratory Data Analysis: https://www.youtube.com/watch?v=UekOBfpu8m8 <br>
 ARIMA Forecasting in R Part 2 - Decomposition of the Data: https://www.youtube.com/watch?v=-qVAeU-_t_4 <br>

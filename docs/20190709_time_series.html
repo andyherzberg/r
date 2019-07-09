@@ -219,11 +219,11 @@ $(document).ready(function () {
 library(&quot;ggplot2&quot;)
 library(&quot;forecast&quot;)
 library(&quot;tseries&quot;)
-library(&quot;tidyverse&quot;)
-library(&quot;rio&quot;)
-library(&quot;xts&quot;)
+#library(&quot;tidyverse&quot;)
+#library(&quot;rio&quot;)
+#library(&quot;xts&quot;)
 library(&quot;dplyr&quot;)
-library(&quot;readxl&quot;) #in case we need to load an Excel file</code></pre>
+#library(&quot;readxl&quot;) #in case we need to load an Excel file</code></pre>
 <p>The data for this analysis of the Air Quality Index can be downloaded here: <a href="https://www.epa.gov/outdoor-air-quality-data/download-daily-data" class="uri">https://www.epa.gov/outdoor-air-quality-data/download-daily-data</a>.</p>
 <pre class="r"><code>#Load the data
 data1 &lt;- read.csv(&quot;ad_viz_plotval_data.csv&quot;)
@@ -426,7 +426,7 @@ plot(fcast4)</code></pre>
 <div id="sources" class="section level3">
 <h3>Sources</h3>
 <p><a href="#top">back to top</a></p>
-<p>A Complete Tutorial on Time Series Modeling in R: <a href="https://www.analyticsvidhya.com/blog/2015/12/complete-tutorial-time-series-modeling/" class="uri">https://www.analyticsvidhya.com/blog/2015/12/complete-tutorial-time-series-modeling/</a> <br> ARIMA Forecasting in R Part 1 - Exploratory Data Analysis: <a href="https://www.youtube.com/watch?v=UekOBfpu8m8" class="uri">https://www.youtube.com/watch?v=UekOBfpu8m8</a> <br> ARIMA Forecasting in R Part 2 - Decomposition of the Data: <a href="https://www.youtube.com/watch?v=-qVAeU-_t_4" class="uri">https://www.youtube.com/watch?v=-qVAeU-_t_4</a> <br> ARIMA Forecasting in R Part 3 - Autocorrelations and Choosing the Model Order: <a href="https://www.youtube.com/watch?v=qqAyMwYEIaA" class="uri">https://www.youtube.com/watch?v=qqAyMwYEIaA</a> <br> ARIMA Forecasting in R Part 4 - Fitting an ARIMA Model: <a href="https://www.youtube.com/watch?v=GpO89Hx088o" class="uri">https://www.youtube.com/watch?v=GpO89Hx088o</a> <br> ARIMA Forecasting in R Part 5 - Testing the ARIMA Model with a Holdout Set and Seasonality: <a href="https://www.youtube.com/watch?v=3I_NrpWsVWM" class="uri">https://www.youtube.com/watch?v=3I_NrpWsVWM</a> <br> ARIMA Forecasting in R Part 6 - Further Testing and Final Model Selection and Visualization: <a href="https://www.youtube.com/watch?v=k6aiuu9oiTY" class="uri">https://www.youtube.com/watch?v=k6aiuu9oiTY</a> <br> Applied Time Series Analysis for Fisheries and Environmental Sciences: <a href="https://nwfsc-timeseries.github.io/atsa-labs/" class="uri">https://nwfsc-timeseries.github.io/atsa-labs/</a> <br> Introduction to Forecasting with ARIMA in R: <a href="https://www.datascience.com/blog/introduction-to-forecasting-with-arima-in-r-learn-data-science-tutorials" class="uri">https://www.datascience.com/blog/introduction-to-forecasting-with-arima-in-r-learn-data-science-tutorials</a> <br></p>
+<p>ARIMA modelling in R: <a href="https://otexts.com/fpp2/arima-r.html" class="uri">https://otexts.com/fpp2/arima-r.html</a> <br> A Complete Tutorial on Time Series Modeling in R: <a href="https://www.analyticsvidhya.com/blog/2015/12/complete-tutorial-time-series-modeling/" class="uri">https://www.analyticsvidhya.com/blog/2015/12/complete-tutorial-time-series-modeling/</a> <br> ARIMA Forecasting in R Part 1 - Exploratory Data Analysis: <a href="https://www.youtube.com/watch?v=UekOBfpu8m8" class="uri">https://www.youtube.com/watch?v=UekOBfpu8m8</a> <br> ARIMA Forecasting in R Part 2 - Decomposition of the Data: <a href="https://www.youtube.com/watch?v=-qVAeU-_t_4" class="uri">https://www.youtube.com/watch?v=-qVAeU-_t_4</a> <br> ARIMA Forecasting in R Part 3 - Autocorrelations and Choosing the Model Order: <a href="https://www.youtube.com/watch?v=qqAyMwYEIaA" class="uri">https://www.youtube.com/watch?v=qqAyMwYEIaA</a> <br> ARIMA Forecasting in R Part 4 - Fitting an ARIMA Model: <a href="https://www.youtube.com/watch?v=GpO89Hx088o" class="uri">https://www.youtube.com/watch?v=GpO89Hx088o</a> <br> ARIMA Forecasting in R Part 5 - Testing the ARIMA Model with a Holdout Set and Seasonality: <a href="https://www.youtube.com/watch?v=3I_NrpWsVWM" class="uri">https://www.youtube.com/watch?v=3I_NrpWsVWM</a> <br> ARIMA Forecasting in R Part 6 - Further Testing and Final Model Selection and Visualization: <a href="https://www.youtube.com/watch?v=k6aiuu9oiTY" class="uri">https://www.youtube.com/watch?v=k6aiuu9oiTY</a> <br> Applied Time Series Analysis for Fisheries and Environmental Sciences: <a href="https://nwfsc-timeseries.github.io/atsa-labs/" class="uri">https://nwfsc-timeseries.github.io/atsa-labs/</a> <br> Introduction to Forecasting with ARIMA in R: <a href="https://www.datascience.com/blog/introduction-to-forecasting-with-arima-in-r-learn-data-science-tutorials" class="uri">https://www.datascience.com/blog/introduction-to-forecasting-with-arima-in-r-learn-data-science-tutorials</a> <br></p>
 </div>
 </div>
 
