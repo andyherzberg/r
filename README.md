@@ -9,4 +9,4 @@
 
 
 
-![alt text](arimaflowchart.png)
+![alt text](https://github.com/andyherzberg/r/blob/master/docs/arimaflowchart.png)
