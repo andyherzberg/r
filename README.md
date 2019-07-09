@@ -7,6 +7,6 @@
 ## PAGE
 * [https://andyherzberg.github.io/r/](https://andyherzberg.github.io/r/) allows to view the r notebooks online
 
-
-## Time Series 
+## HOW TO
+### Time Series 
 ![alt text](https://github.com/andyherzberg/r/blob/master/docs/arimaflowchart.png)
