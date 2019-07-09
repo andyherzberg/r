@@ -1,0 +1,332 @@
+---
+title: "Time Series Analysis in R"
+date: 09.07.2019
+author: "Andy Herzberg"
+fig_width: 3 
+fig_height: 2
+output:
+  html_document:
+    df_print: paged
+---
+
+<a id="top"></a>
+
+### Table of contents
+* [Exploratory Data Analysis](#exploratory-data-analysis) <br>
+* [Decomposition of the data](#decomposition-of-the-data) <br>
+* [Autocorrelations and choosing model order](#autocorrelations)
+* [Fitting an ARIMA model](#fitting-an-arima-model) <br>
+* [Futher analysis and testing of our models](#further-analysis) <br>
+* [Sources](#sources) <br>
+
+<a id="exploratory-data-analysis"></a>
+
+### Exploratory data analysis 
+
+<a href="#top">back to top</a>
+
+At first we need to install and load all required libraries.
+```{r warning=FALSE, message=FALSE}
+# install.packages("rio")
+library("ggplot2")
+library("forecast")
+library("tseries")
+#library("tidyverse")
+#library("rio")
+#library("xts")
+library("dplyr")
+#library("readxl") #in case we need to load an Excel file
+```
+
+The data for this analysis of the Air Quality Index can be downloaded here: https://www.epa.gov/outdoor-air-quality-data/download-daily-data. 
+
+```{r}
+#Load the data
+data1 <- read.csv("ad_viz_plotval_data.csv")
+head(data1, 3)
+```
+
+The Date column needs to be converted to date type.
+
+```{r}
+data1$DATES <- as.Date(data1$Date, "%m/%d/%Y")
+data1$Month <- format(data1$DATES,"%m")
+tail(data1, 3)
+```
+
+Do some cleaning in order to keep only the relevant data bits. 
+
+```{r}
+data1$SO2 <- data1$Daily.Max.1.hour.SO2.Concentration
+data1 <- select(data1, DATES, SO2, Month)
+head(data1, 3)
+```
+Inspect the SO2 column. 
+
+```{r}
+summary(data1$SO2)
+```
+
+Draw a histogram f the SO2 data.
+
+```{r}
+ggplot(data1, aes(x=SO2)) + 
+  geom_histogram(binwidth = 1, colour = "red", fill = "grey")
+
+```
+
+
+Plot the SO2 field over time - shows high variance in this case. 
+
+```{r}
+ggplot(data1, aes(DATES, SO2)) + 
+  geom_line() +
+  scale_x_date('Month') +
+  ylab("Maximal Daily SO2 Concentration (1 hour)") +
+  xlab("")
+```
+
+PLot month over month in order to see the ranges and outliers.
+
+```{r}
+ggplot(data1, aes(DATES, SO2)) + 
+  geom_point(color = "red") + 
+  facet_wrap(~ Month) + 
+  scale_x_date('Month') + 
+  ylab("Maximal Daily SO2 Concentration (1 hour)") + 
+  xlab("")
+```
+
+Create a time series object based on S02 to pass to tsclean(). 
+
+```{r}
+count_TSObject <- ts(data1[,c('SO2')])
+data1$clean_count = tsclean(count_TSObject)
+```
+
+Graph clean data - ignore type ts scale warning. Plot original data (blue) by the side for caomparison
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.
+
+```{r}
+ ggplot() +
+  geom_line(data=data1, aes(x=DATES, y=SO2, color="Original data")) +
+  geom_line(data=data1, aes(x=DATES, y=clean_count, color="Cleaned data")) +
+  theme(legend.position="bottom")
+```
+
+Get weekly and monthly moving averages (MA) and compare to cleaned daily datawhich still has a lot variance and volatility in it.
+```{r warning=FALSE}
+
+data1$cnt_ma <- ma(data1$clean_count, order=7) # using the clean count with no outliers
+data1$cnt_ma30 <- ma(data1$clean_count, order=30)
+ggplot() +
+  geom_line(data=data1, aes(x=DATES, y=clean_count, color ="Original data")) +
+  geom_line(data=data1, aes(x=DATES, y=cnt_ma, color ="Weekly moving average")) +
+  geom_line(data=data1, aes(x=DATES, y=cnt_ma30, color ="Monthly moving average")) +
+  ylab("SO2 PPM Count") +
+  theme(legend.position="bottom")
+```
+
+<a id="decomposition-of-the-data"></a>
+
+## Decomposition of the data
+
+<a href="#top">back to top</a>
+
+Take seasonality, trend and cycle into account
+Calculate seasonal component with stl().
+
+```{r}
+count_ma <- ts(na.omit(data1$cnt_ma), frequency=30)
+decomp = stl(count_ma, s.window = "periodic")
+deseasonal_cnt = seasadj(decomp)
+plot(decomp)
+```
+
+Test for stationarity - first visual check for stationarity variance
+2nd - Augmented Dickey-Fuller test.
+
+```{r}
+adf.test(count_ma, alternative="stationary")
+```
+
+<a id="autocorrelations"></a>
+
+## Autocorrelations and choosing model order
+
+<a href="#top">back to top</a>
+
+ACF plots display correlations between a series and its lags.
+
+```{r}
+acf(count_ma, main="")
+```
+
+PACF plots display correlation between a series and its lags that explained by previous lags.
+
+```{r}
+pacf(count_ma, main="")
+```
+
+Difference of 1 is sufficient
+
+```{r}
+count_d1 = diff(deseasonal_cnt, differences = 1) 
+plot(count_d1)
+```
+
+```{r}
+adf.test(count_d1, alternative="stationary")
+```
+
+Look for spikes at specific lag points of the differenced series (using count_d1 from above)
+
+```{r}
+acf(count_d1, main = "ACF for differenced series")
+```
+
+```{r warning=FALSE}
+pacf(count_d1, main = "PACF for differenced series")
+```
+
+<a id="fitting-an-arima-model"></a>
+
+## Fitting an ARIMA model
+
+<a href="#top">back to top</a>
+
+Get auto fit p, d, q values for AR(p) I(d) MA(q)
+
+```{r}
+auto.arima(deseasonal_cnt, seasonal=FALSE)
+```
+
+Evaluate and iterate: Does the model make sense?
+
+```{r}
+fit <- auto.arima(deseasonal_cnt, seasonal=FALSE) # same as above but fititng a model
+tsdisplay(residuals(fit), lag.max = 45, main='(1,1,1) Model ')
+```
+
+Graph shows series lags at 7, so modify model for p or q = 7.
+
+```{r}
+fit2 <- arima(deseasonal_cnt, order=c(1,1,7))
+tsdisplay(residuals(fit2), lag.max=20, main="Seasonal Model Residuals")
+```
+
+Forecast new fit model (fit2) for h=30 periods (30 days).
+
+```{r}
+fcast <- forecast(fit2, h=30)
+plot(fcast)
+```
+
+<a id="test-model-performance"></a>
+### Test model performance with a holdout set
+
+```{r}
+hold <- window(ts(deseasonal_cnt), start(350))
+fit_no_holdout = arima(deseasonal_cnt[-c(350:384)], order=c(1,1,7))
+fcast_no_holdout <- forecast(fit_no_holdout, h=35)
+plot(fcast_no_holdout, main="")
+lines(ts(deseasonal_cnt))
+```
+
+Model needs seasonality added back in as it is too linear and not reality conform
+
+```{r}
+fit_w_seasonality <- auto.arima(deseasonal_cnt, seasonal = TRUE)
+seas_forecast <- forecast(fit_w_seasonality, h=50)
+plot(seas_forecast)
+
+lines(ts(count_ma))
+lines(ts(deseasonal_cnt))
+```
+
+<a id="further-analysis"></a>
+
+### Futher analysis and testing of our models
+
+Test against original auto.arima() p, d, q values
+
+```{r}
+fit3 <- auto.arima(deseasonal_cnt, seasonal=FALSE)
+tsdisplay(residuals(fit3), lag.max=15, main ="Seasonal Model Residuals")
+```
+
+Evidence exists of a lag at 7, a higher order q value (q=7) might be necessary.
+
+```{r}
+fit4 <- arima(deseasonal_cnt, order = c(1,1,7)) #(2,1,7)
+tsdisplay(residuals(fit4), lag.max=15, main ="Seasonal Model Residuals")
+
+```
+
+Default ARIMA model 1,1,1 (p,d,q) values for most apps
+
+```{r}
+fit5 <- arima(deseasonal_cnt, order=c(1,1,1))
+tsdisplay(residuals(fit5), lag.max=15, main = "Seasonal Model Residuals")
+```
+
+Final fit and testing of the ARIMA forecast
+
+```{r}
+par(mfrow=c(2,2))
+
+# auto arima (2,0,3) fit with seasonality
+facst <- forecast(fit_w_seasonality, h=30)
+plot(fcast)
+
+# auto arima (2,0,3) fit without seasonality
+fcast2 <- forecast(fit3, h=30)
+plot(fcast2)
+
+# custom arima (1,1,7) fit
+fcast3 <- forecast(fit4, h=30)
+plot(fcast3)
+
+# general default arima (1,1,1) fit 
+fcast4 <- forecast(fit5, h=30)
+plot(fcast4)
+
+
+```
+
+
+<a id="sources"></a>
+
+### Sources 
+<a href="#top">back to top</a>
+
+ARIMA modelling in R: https://otexts.com/fpp2/arima-r.html <br>
+A Complete Tutorial on Time Series Modeling in R: https://www.analyticsvidhya.com/blog/2015/12/complete-tutorial-time-series-modeling/ <br>
+ARIMA Forecasting in R Part 1 - Exploratory Data Analysis: https://www.youtube.com/watch?v=UekOBfpu8m8 <br>
+ARIMA Forecasting in R Part 2 - Decomposition of the Data: https://www.youtube.com/watch?v=-qVAeU-_t_4 <br>
+ARIMA Forecasting in R Part 3 - Autocorrelations and Choosing the Model Order: https://www.youtube.com/watch?v=qqAyMwYEIaA <br>
+ARIMA Forecasting in R Part 4 - Fitting an ARIMA Model: https://www.youtube.com/watch?v=GpO89Hx088o <br>
+ARIMA Forecasting in R Part 5 - Testing the ARIMA Model with a Holdout Set and Seasonality: 
+https://www.youtube.com/watch?v=3I_NrpWsVWM <br>
+ARIMA Forecasting in R Part 6 - Further Testing and Final Model Selection and Visualization: https://www.youtube.com/watch?v=k6aiuu9oiTY <br>
+Applied Time Series Analysis for Fisheries and Environmental Sciences: https://nwfsc-timeseries.github.io/atsa-labs/ <br>
+Introduction to Forecasting with ARIMA in R:   https://www.datascience.com/blog/introduction-to-forecasting-with-arima-in-r-learn-data-science-tutorials <br>
