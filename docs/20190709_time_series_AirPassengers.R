@@ -47,6 +47,12 @@ air.model_111 = Arima(AirPassengers,
 # Inspect ACF, PACF and residuals
 tsdisplay(residuals(air.model_111), lag.max = 45, main='(1,1,1) Model ')
 
+# Check model parameters
+Arima(AirPassengers, 
+      order = c(1, 1, 1), 
+      seasonal=list(order=c(1,1,1), period=12),
+      lambda = 0)
+
 air.model_011 = Arima(AirPassengers, 
                   order = c(0, 1, 1), 
                   seasonal=list(order=c(0,1,1), period=12),
@@ -54,6 +60,13 @@ air.model_011 = Arima(AirPassengers,
 
 # Inspect ACF, PACF and residuals
 tsdisplay(residuals(air.model_011), lag.max = 45, main='(0,1,1) Model ')
+
+# Check model parameters
+Arima(AirPassengers, 
+      order = c(0, 1, 1), 
+      seasonal=list(order=c(0,1,1), period=12),
+      lambda = 0)
+
 
 ################################################################
 
