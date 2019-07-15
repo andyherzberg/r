@@ -1,0 +1,831 @@
+ <H1>Red Wine Quality</H1><H3>by Andy Herzberg</H3>
+==========================================================================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using in your analysis in this code
+# chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk. This
+# prevents the code from displaying in the knitted HTML output. You should set
+# echo=FALSE for all code chunks in your file, unless it makes sense for your
+# report to show the code that generated a particular plot.
+
+# The other parameters for "message" and "warning" should also be set to FALSE
+# for other code chunks once you have verified that each plot comes out as you
+# want it to. This will clean up the flow of your report.
+
+library(ggplot2)
+library(gridExtra) # https://cran.r-project.org/web/packages/egg/vignettes/Ecosystem.html
+library(ggcorrplot)
+library("RColorBrewer")
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+df = read.csv('wineQualityReds.csv')
+```
+
+<H1>Introduction</H1>
+The goal of this explorative analysis is to investigate which chemical properties influence the quality of red wines. The data set contains 1,599 red wines with 11 variables on their chemical properties. At least 3 wine experts rated the quality of each wine, providing a rating between 0 (very bad) and 10 (very excellent). The importance and interplay between the chemical compounds will be investigated regarding the experts' rating.
+
+# Univariate Plots Section
+<H3>Data set sample</H3>
+The following table display the top rows of the dataframe. 
+
+```{r echo=FALSE}
+# Display the head of the table
+head(df)
+```
+**Learning**: In the data set is an index column "X" that will be removed from further inspections. 
+
+```{r echo = FALSE}
+# Delete unnecessary index column from data set
+df <- subset(df, select = -c(X))
+```
+
+<H3>Data types of the set</H3>
+The following table displays the column name and the resp. data type.
+
+```{r echo = FALSE}
+# Get a vector of column classes
+sapply(df, class)
+```
+
+**Learning**: There are just numeric columns in the data set. Most are floats, some are integers. All columns except the quality column contain continuous data. 
+
+<H3>Summary statistics, histograms + box plots</H3>
+The following section provides an overview about the distribution of the features. 
+
+```{r message=FALSE, echo = FALSE}
+
+# Define histogram charts for the different features
+p1 <- ggplot(aes(x = fixed.acidity), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('fixed.acidity') 
+p2 <- ggplot(aes(x = volatile.acidity), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('volatile.acidity')
+p3 <- ggplot(aes(x = citric.acid), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('citric.acid')
+p4 <- ggplot(aes(x = residual.sugar), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('residual.sugar')
+p5 <- ggplot(aes(x = chlorides), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('chlorides')
+p6 <- ggplot(aes(x = free.sulfur.dioxide), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('free.sulfur.dioxide')
+p7 <- ggplot(aes(x = total.sulfur.dioxide), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('total.sulfur.dioxide')
+p8 <- ggplot(aes(x = density), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('density')
+p9 <- ggplot(aes(x = pH), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('pH')
+p10 <- ggplot(aes(x = sulphates), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('sulphates')
+pXX <- ggplot(aes(x = alcohol), data = df) +
+  geom_histogram(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('alcohol')
+
+# Define boxplot charts for the different features
+p11 <- ggplot(aes(y = fixed.acidity), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('fixed.acidity') + 
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() + 
+  geom_hline(yintercept=mean(df$fixed.acidity), linetype="dashed", color = "red") 
+p21 <- ggplot(aes(y = volatile.acidity), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('volatile.acidity') +
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() +
+  geom_hline(yintercept=mean(df$volatile.acidity), linetype="dashed", color = "red")
+p31 <- ggplot(aes(y = citric.acid), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('citric.acid') +
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() +
+  geom_hline(yintercept=mean(df$citric.acid), linetype="dashed", color = "red")
+p41 <- ggplot(aes(y = residual.sugar), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('residual.sugar') +
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() +
+  geom_hline(yintercept=mean(df$residual.sugar), linetype="dashed", color = "red")
+p51 <- ggplot(aes(y = chlorides), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('chlorides') +
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() +
+  geom_hline(yintercept=mean(df$chlorides), linetype="dashed", color = "red")
+p61 <- ggplot(aes(y = free.sulfur.dioxide), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('free.sulfur.dioxide') +
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() +
+  geom_hline(yintercept=mean(df$free.sulfur.dioxide), linetype="dashed", color = "red")
+p71 <- ggplot(aes(y = total.sulfur.dioxide), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('total.sulfur.dioxide') + 
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() +
+  geom_hline(yintercept=mean(df$total.sulfur.dioxide), linetype="dashed", color = "red")
+p81 <- ggplot(aes(y = density), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('density') + 
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() +
+  geom_hline(yintercept=mean(df$density), linetype="dashed", color = "red")
+p91 <- ggplot(aes(y = pH), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('pH') + 
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() +
+  geom_hline(yintercept=mean(df$pH), linetype="dashed", color = "red")
+p101 <- ggplot(aes(y = sulphates), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('sulphates') +
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() +
+  geom_hline(yintercept=mean(df$sulphates), linetype="dashed", color = "red")
+pXX_2 <- ggplot(aes(y = alcohol), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('alcohol') +
+  stat_boxplot(geom ='errorbar', color = 'red', width = 1) +
+  coord_flip() +
+  geom_hline(yintercept=mean(df$alcohol), linetype="dashed", color = "red")
+```
+
+<H4>Distribution of fixed.acidity</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for fixed.acidity
+summary(df$fixed.acidity)
+```
+```{r message=FALSE, echo=FALSE, fig, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(p1, p11, ncol=2) 
+```
+The distribution of fixed.acidity is right skewed. There are some outliers with a fixed.acidity higher than approx $13g/dm^3$.  
+
+
+<H4>Distribution of volatile.acidity</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for volatile.acidity
+summary(df$volatile.acidity)
+```
+```{r message=FALSE, echo=FALSE, fig2, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(p2, p21, ncol=2) 
+```
+The distribution of volatile.acidity is a bit right skewed with some outliers with volatile.acidity higher than $1.0g/dm^3$. Mean and Median have nearly the same value. 
+
+<H4>Distribution of citric.acid</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for citric.acid
+summary(df$citric.acid)
+```
+```{r message=FALSE, echo=FALSE, fig3, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(p3, p31, ncol=2)
+```
+The distribution of citric.acid is right skewed. The values of Mean and Median are close together.
+
+<H4>Distribution of residual.sugar</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for residual.sugar
+summary(df$residual.sugar)
+```
+
+```{r message=FALSE, echo=FALSE, fig4, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(p4, p41, ncol=2)
+```
+The distribution of residual.sugar is right skewed with a lot of outliers bigger than approx $3.5g/dm^3$.
+
+<H4>Distribution of chlorides</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for chlorides 
+summary(df$chlorides )
+```
+
+```{r message=FALSE, echo=FALSE, fig5, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(p5, p51, ncol=2)
+```
+The distribution of chlorides is right skewed with a lot of outliers bigger than approx. $0.15g/dm^3$.
+
+<H4>Distribution of free.sulfur.dioxide</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for free.sulfur.dioxide  
+summary(df$free.sulfur.dioxide)
+```
+
+```{r message=FALSE, echo=FALSE, fig6, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(p6, p61, ncol=2)
+```
+The distribution of free.sulfur.dioxide is right skewed. There are several outliers with more than approx $42mg/dm^3$.
+
+<H4>Distribution of total.sulfur.dioxide</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for total.sulfur.dioxide  
+summary(df$total.sulfur.dioxide)
+```
+
+```{r message=FALSE, echo=FALSE, fig7, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(p7, p71, ncol=2)
+```
+The distribution of total.sulfur.dioxide is right skewed. There are sveral outliers with more than $120mg/dm^3$.
+
+<H4>Distribution of density</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for density  
+summary(df$density)
+```
+
+```{r message=FALSE, echo=FALSE, fig8, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(p8, p81, ncol=2) 
+```
+Accept for some outliers the distribution from density is normally distributed. Therefore Mean and Median are very close to be the same.
+
+<H4>Distribution of pH</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for pH  
+summary(df$pH)
+```
+
+```{r message=FALSE, echo=FALSE, fig9, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(p9, p91, ncol=2)
+```
+The distribution of the pH is also normally distributed. 
+
+<H4>Distribution of sulphates</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for sulphates  
+summary(df$sulphates)
+```
+
+```{r message=FALSE, echo=FALSE, fig10, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(p10, p101, ncol=2)
+```
+The distribution of sulphates is right skewed with some outliers with more than $1.0g/dm3$.
+
+<H4>Distribution of alcohol</H4>
+```{r message=FALSE, echo=FALSE}
+# Summary for alcohol  
+summary(df$alcohol)
+```
+
+```{r message=FALSE, echo=FALSE, fig11, fig.height = 3, fig.width = 10}
+# Arrange histogram and boxplot chart
+grid.arrange(pXX, pXX_2, ncol=2)
+```
+The distribution of alcohol is also right skewed. 50% of the wines have an alcohol concentration between 9.50% up to 11.10% by volume.
+
+<H3>Distribution of experts\' quality rating</H3>
+```{r message=FALSE, echo=FALSE}
+# Create bar chart for discrete quality ratings
+ggplot(aes(x = quality), data = df) +
+  geom_bar(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Distribution of experts\'s quality rating') 
+```
+<br>Most experts\' rating range between 3 and 8. About 1,300 wines were rated between 5 or 6 regarding their quality. The mode is a at a quality of 5 with 681 ratings. 
+
+
+```{r}
+# Display quantities of discrete experts\' quality rating values
+table(df$quality)
+```
+```{r}
+# Detect maximum of quality ratings
+which.max(table(df$quality))
+```
+
+<H3>Facet wrap investigations</H3>
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = fixed.acidity), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of fixed.acidity distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>Based on the data we can say that there is no visible relationsship between fixed.acidity and quality. First it seems that the quality rises with higer fixed.acidity, but after rating 7 it descreases.  
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_fixed.acidity = mean(subset(df, df$quality ==8)$fixed.acidity) - mean(subset(df, df$quality ==3)$fixed.acidity)
+cat("Difference of features' means from lowest and highest rating: ",delta_fixed.acidity)
+```
+
+
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = volatile.acidity), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of volatile.acidity distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>Based on the data we can say that on average the missing of volatile.acidity seems the have a negative impact on the experts quality ratings. 
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_volatile.acidity =  mean(subset(df, df$quality ==8)$volatile.acidity) - mean(subset(df, df$quality ==3)$volatile.acidity) 
+cat("Difference of features' means from lowest and highest rating: ", delta_volatile.acidity)
+```
+
+
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = citric.acid), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of citric.acid distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>Based on the data we can say that on average the presence of citric.acid results in a higher quality rating. 
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_citric.acid = mean(subset(df, df$quality ==8)$citric.acid) - mean(subset(df, df$quality ==3)$citric.acid) 
+cat("Difference of features' means from lowest and highest rating: ", delta_citric.acid)
+```
+
+
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = residual.sugar), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of residual.sugar distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>Based on the data on average it doesn't look like residual.sugar has a big impact on the experts\' quality ratings. 
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_residual.sugar = mean(subset(df, df$quality ==8)$residual.sugar) - mean(subset(df, df$quality ==3)$residual.sugar)
+cat("Difference of features' means from lowest and highest rating: ", delta_residual.sugar)
+```
+
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = chlorides), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of chlorides distributionn on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>Based on the data it seems that chlorides have little influence on quality. When the value of chlorides is less, the quality decrease slightly. 
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_chlorides = mean(subset(df, df$quality ==8)$chlorides) - mean(subset(df, df$quality ==3)$chlorides) 
+cat("Difference of features' means from lowest and highest rating: ", delta_chlorides)
+```
+
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = free.sulfur.dioxide), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of free.sulfur.dioxide distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>Based on the data we can say that on average high concentrations of free.sulfur.dioxide result in medium quality ratings while low concentration lead either to poor or good ratings. 
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_free.sulfur.dioxide = mean(subset(df, df$quality ==8)$free.sulfur.dioxide) - mean(subset(df, df$quality ==3)$free.sulfur.dioxide)
+cat("Difference of features' means from lowest and highest rating: ", delta_free.sulfur.dioxide)
+```
+
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = total.sulfur.dioxide), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of total.sulfur.dioxide distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>As for total.sulfur.dioxide, on average high concentrations of free.sulfur.dioxide result in medium quality ratings while low concentration lead either to poor or good ratings. 
+
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_total.sulfur.dioxide = mean(subset(df, df$quality ==8)$total.sulfur.dioxide) - mean(subset(df, df$quality ==3)$total.sulfur.dioxide) 
+cat("Difference of features' means from lowest and highest rating: ", delta_total.sulfur.dioxide)
+
+```
+
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = density), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of density distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>Based on the data we can say that on average lower density results in better quality ratings.
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_density = mean(subset(df, df$quality ==8)$density) - mean(subset(df, df$quality ==3)$density)
+cat("Difference of features' means from lowest and highest rating: ", delta_density)
+
+```
+
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = pH), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of pH distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>Based on the data we can say that on average there is a relationship between pH value and quality. The lower the pH the higher the experts\' quality rating. 
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_pH = mean(subset(df, df$quality ==8)$pH) - mean(subset(df, df$quality ==3)$pH) 
+cat("Difference of features' means from lowest and highest rating: ", delta_pH)
+```
+
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = sulphates), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of sulphates distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>Based on the data we can say that on average the higher the sulphates concentration the better the quality ratings. 
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_sulphates = mean(subset(df, df$quality ==8)$sulphates) - mean(subset(df, df$quality ==3)$sulphates)
+cat("Difference of features' means from lowest and highest rating: ", delta_sulphates)
+```
+
+```{r message=FALSE, echo=FALSE}
+# Create facet wrapped boxplots 
+ggplot(aes(y = alcohol), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of alcohol distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+<br>Based on the data we can say that on average the higher the alcohol comcentration the better the experts\' quality ratings. 
+
+```{r message=FALSE, echo=FALSE}
+# Calculate the delta of features\s means from highest to lowest rating
+delta_alcohol = mean(subset(df, df$quality ==8)$alcohol) - mean(subset(df, df$quality ==3)$alcohol) 
+cat("Difference of features' means from lowest and highest rating: ", delta_alcohol)
+```
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+The dataset contains 1,599 rows. Each row represents a red wine observation that consists of 11 coninuous meassurements of chemical properties and discrete experts' rating on the red wine quality. There are no missing values in the data set. Several of the attributes may be correlated according to some information attached to the data set, according to the naming of the variables (like f. e. free.sulfur.dioxide and total.sulfur.dioxide) and according to the behaviour of the features box plots when it comes to facet grid exploration.
+
+### What is/are the main feature(s) of interest in your dataset?
+Inspecting the facetted box plots visually the following features seem to have an effect on the experts\'s quality ratings:<br>
+* fixed.acidity (positive effect)<br>
+* volatile.acidity (negative effect)<br>
+* citric.acid (positve effect)<br>
+* chlorides (negative effect)<br>
+* free.sulfur.dioxide (positive/negative effect)<br>
+* total.sulfur.dioxide (positive/negative effect)<br>
+* density (negative effect)<br>
+* pH (negative effect)<br>
+* sulphates (positive effect)<br>
+* pH (positive effect)<br>
+
+When comparing the features\' means for good and bad ratings the following features seem to be most important for the experts\' rating (from highest to lowest difference):<br>
+* total.sulfur.dioxide: 8,544<br>
+* free.sulfur.dioxide: 2,278<br>
+* alcohol: 2,139<br>
+* volatile.acidit: -0,461<br>
+* citric.acid: 0,220<br>
+* fixed.acidity: 0,207<br>
+* sulphates: 0,198<br>
+* pH: -0,131<br>
+* residual.sugar: -0,057<br>
+* chlorides: -0,054<br>
+* density: -0,002<br>
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+The interplay between the features will help support the investigation in the next bivariate and multivariate step. I could imagine that the features with the biggest delta between good and badf rating play the biggest role for the experts\' rating. 
+
+### Did you create any new variables from existing variables in the dataset?
+In didn't create any new variables on my own but I did a facet grid exploration and a mean comparison of good and bad ratings. 
+
+### Of the features you investigated, were there any unusual distributions? 
+The are some right skewed distributions for several features. When inspecting the features using facet grid it turned out the especially the best and worst ratings were skewed. 
+
+# Bivariate Plots Section
+
+<H3>Correlation analysis</H3>
+The following table displays the Pearson correlation coefficient r on features basis. A correlation coefficient of ±0.5 indicates a strong correlation, ±0.3 indictes medium correlation while ±0.1 indicates a weak correlation.
+
+```{r message=FALSE, echo=FALSE}
+# Pearson corr coeff r
+# strong: ±0.5 
+# medium: ±0.3
+# weak: ±0.1
+
+# Compute a matrix of correlation p-values
+corr <- round(cor(df), 1)
+corr
+```
+
+The p-value describes the probability of the correlation coefficient that the correlation is significant. A p-value greater of 0.05 means that the correlation is not significant, less than 0.05 means it is significant. 
+
+```{r message=FALSE, echo=FALSE}
+# P-values
+# >0.05 not significant 
+# <0.05 significant
+
+# Compute a matrix of correlation p-values
+p.mat <- round(cor_pmat(df), 5)
+p.mat
+```
+
+The following Correlogram visualizes the correlation between the features. If the p-value is not significant the coefficient of correlation is set with 0.
+
+```{r message=FALSE, echo=FALSE}
+# Visualize the correlation matrix
+ggcorrplot(corr, hc.order = TRUE, type = "upper", lab = TRUE, p.mat = p.mat, sig.level = 0.01, insig = "blank", outline.col = "white",
+   ggtheme = ggplot2::theme_gray,
+   colors = c("lightblue", "white", "orange")) +
+  ggtitle('Correlogram of features influencing experts\' quality rating') 
+```
+<br>The correlogram illustrates the relationships beween features itself and between features and quality. The values show the pearson correlation coefficient. The value of ±0.5 indicates a strong correlation. The value of ±0.3 stands for a medium correlation and ±0.1 indicates a weak correlation. 
+We can see the alcohol concentration is correlated with quality. There is also a negative correlation of volatile.acidity with quality. We can also see that some features are correlated with others features like free.sulfur.dioxide and total.sulfur.dioxide. 
+
+<H3>Scatter plots of the strongest correlations</H3>
+
+```{r message=FALSE, echo=FALSE}
+# Create a scatterplot 
+ggplot(aes(y = free.sulfur.dioxide, x = total.sulfur.dioxide ), data = df) + 
+  geom_point(color = 'orange', alpha=0.2) +
+  # Add regression lines to scatter plot
+  geom_smooth(method=lm, se=FALSE, linetype="dashed", color="red") +
+  ggtitle('Correlation of free.sulfur.dioxide and total.sulfur.dioxide') 
+```
+<br>As seen from the correlogram free.sulfur.dioxide and total.sulfur.dioxide are hightly correlated with a Pearson correlation coefficient of 0.7. The positiv correlation shows, that with increasing free.sulfur.dioxide the total.sulfur.dioxide rises, too. This can also be seen in this scatter plot. The red dotted line visualizes the regression line for the data.  
+
+```{r message=FALSE, echo=FALSE}
+# Create a scatterplot and 
+ggplot(aes(y = citric.acid, x = fixed.acidity ), data = df) +
+  geom_point(color = 'orange', alpha=0.2) +
+  # Add regression lines to scatter plot
+  geom_smooth(method=lm, se=FALSE, linetype="dashed", color="red") +
+  ggtitle('Correlation of citric.acid and fixed.acidity') 
+```
+<br>As seen from the correlogram citric.acid and ficed.acidity are hightly correlated with a Pearson correlation coefficient of 0.7. The positiv correlation shows, that with increasing citric.acid the ficed.acidity rises, too. This can also be seen in this scatter plot.  The red dotted line visualizes the regression line for the data. 
+
+```{r message=FALSE, echo=FALSE}
+# Create a scatterplot 
+ggplot(aes(y = fixed.acidity, x = density ), data = df) +
+  geom_point(color = 'orange', alpha = 0.2) +
+  # Add regression lines to scatter plot
+  geom_smooth(method=lm, se=FALSE, linetype="dashed", color="red") +
+  ggtitle('Correlation of fixed.acidity and density') 
+```
+<br>As seen from the correlogram fixed.acidity and density are hightly correlated with a Pearson correlation coefficient of 0.7. The positiv correlation shows, that with increasing fixed.acidity the density rises, too. This can also be seen in this scatter plot. The red dotted line visualizes the regression line for the data. 
+
+```{r message=FALSE, echo=FALSE}
+# Create a scatterplot 
+ggplot(aes(y = fixed.acidity, x = pH ), data = df) +
+  geom_point(color = 'orange', alpha=0.2) +
+  # Add regression lines to scatter plot
+  geom_smooth(method=lm, se=FALSE, linetype="dashed", color="red") +
+  ggtitle('Correlation of fixed.acidity and pH') 
+```
+<br>As seen from the correlogram fixed.acidity and pH are hightly correlated with a Pearson correlation coefficient of -0.7. The negative correlation shows, that with decreasing fixed.acidity the pH decreases, too. This can also be seen in this scatter plot. The red dotted line visualizes the regression line for the data. 
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the analysis.
+The correlation analysis validates a (strong) relationship beween:<br>
+* quality <> alcohol<br>
+* quality <> volatile.acidity<br>
+* quality <> sulphates<br>
+
+### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+The correlation analysis validates strong positive relationship beween:<br>
+* total.sulfur.dioxide <> free.sulfur.dioxide<br>
+* residual.sugar <> density<br>
+* sulphates <> chlorides<br>
+* citric.acid <> fixed.acidity<br>
+* fixed.acidity <> density<br>
+
+Furthermore these is a strong negative relationship beween:<br>
+* pH <> fixed.acidity<br>
+* pH <> citric.acid<br>
+* volatile.acidity <> citric.acid<br>
+* alcohol <> density<br>
+
+### What was the strongest relationship you found?
+The strongest relationships are between:<br>
+* total.sulfur.dioxide <> free.sulfur.dioxide<br>
+* citric.acid <> fixed.acidity<br>
+* fixed.acidity <> density<br>
+* pH <> fixed.acidity<br>
+
+# Multivariate Plots Section
+
+<H3>Scatter plots of the strongest correlations</H3>
+
+```{r message=FALSE, echo=FALSE}
+# Create a scatterplot 
+ggplot(aes(y = free.sulfur.dioxide, x = total.sulfur.dioxide, color = as.factor(quality)), data = df) + 
+  # Adjust coloring
+  scale_color_manual(values = brewer.pal(n = 6, name = 'YlOrBr'), name = "quality") +
+  geom_point() +
+  ggtitle('Correlation of free.sulfur.dioxide and total.sulfur.dioxide including quality')
+```
+<br>This scatterplot visaualizes the relationship between free.sulfur.dioxide and total.sulfur.dioxide. The quality is visualized by color saturation. We are not able to detect a clear relationaship with quality ratings here.
+
+```{r message=FALSE, echo=FALSE}
+# Create a scatterplot
+ggplot(aes(y = citric.acid, x = fixed.acidity, color = as.factor(quality) ), data = df) + 
+  # Adjust coloring
+  scale_color_manual(values = brewer.pal(n = 6, name = 'YlOrBr'), name = "quality") +
+  geom_point() +
+  ggtitle('Correlation of citric.acid and fixed.acidity including quality') 
+```
+<br>This scatter plot visualizes the relationship of citric.acid and fixed.acidity. The seems to be a linear relationship between citric.acid and fixed.acidity: The higher the concentration of citric.acid, the higher the fixed.acidity. Better wines seem to have more citric.acid resp. fixed.acidity. 
+         
+```{r message=FALSE, echo=FALSE}
+# Create a scatterplot
+ggplot(aes(y = fixed.acidity, x = density, color = as.factor(quality)), data = df) + 
+  # Adjust the coloring
+  scale_color_manual(values = brewer.pal(n = 6, name = 'YlOrBr'), name = "quality") +
+  geom_point() +
+  ggtitle('Correlation of fixed.acidity and density including quality') 
+```
+<br>As for the previous plot we can also detect a linear relationship of fixed.acidity and density. The higher the fixed.acidity, the higher the density. We are not able to detect a clear relationship with the experts\' quality ratings as good ratings can be found with small fixed.acidity / density values and with relatively high ones, too.
+
+```{r message=FALSE, echo=FALSE}
+# Add a scatterplot
+ggplot(aes(y = fixed.acidity, x = pH, color = as.factor(quality) ), data = df) + 
+  # Adjust the coloring
+  scale_color_manual(values = brewer.pal(n = 6, name = 'YlOrBr'), name = "quality") +
+  geom_point() +
+  ggtitle('Correlation of fixed.acidity and pH including quality') 
+```
+<br>This scatterplot visualizes the relationship between fixed.acidity and pH (which is negatively correlated). Although the relationship between these values is linear we cannot detect and relationship with the quality ratings as good ratings can be found with small fixed.acidity / pH values and with relatively high ones, too.
+
+```{r message=FALSE, echo=FALSE}
+# Add a scatterplot 
+ggplot(aes(y = alcohol, x = sulphates, color = as.factor(quality) ), data = df) + 
+  # Adjust the coloring
+  scale_color_manual(values = brewer.pal(n = 6, name = 'YlOrBr'), name = "quality") +
+  geom_point() +
+  ggtitle('Correlation of alcohol and sulphates including quality') 
+```
+<br>This scatterplot visualizes the relationship between alcohol and suphates. The color saturation shows that good wines tend to have higher alcohol and higher sulphates concentration. 
+
+```{r message=FALSE, echo=FALSE}
+# Add a scatterplot
+ggplot(aes(y = alcohol, x = volatile.acidity, color = as.factor(quality) ), data = df) + 
+  # Adjust the coloring
+  scale_color_manual(values = brewer.pal(n = 6, name = 'YlOrBr'), name = "quality") +
+  geom_point() +
+  ggtitle('Correlation of alcohol and volatile.acidity including quality') 
+```
+<br>This scatterplot visualizes the relationship of alcohol and volatile.acidity on experts\' quality ratings. Higher alcohol concentration tends results in better ratings. Higher concentration of volatile.acidity also results in better ratings but the relationship doesn't seem that stromng as for alcohol.
+
+```{r echo=FALSE}
+# Add a scatterplot
+ggplot(aes(y = alcohol, x = citric.acid, color = as.factor(quality) ), data = df) + 
+  # Adjust the coloring
+  scale_color_manual(values = brewer.pal(n = 6, name = 'YlOrBr'), name = "quality") +
+  geom_point() +
+  ggtitle('Correlation of alcohol and citric.acid including quality') 
+```
+<br>This scatterplot visualizes the relationship between alcohol and citric.acid. Based on the data we can say that higher concentration of alcohol and higher concentration of citric.acid results in better experts\' quality ratings. 
+
+```{r echo=FALSE}
+# Disable scientific number notation
+options(scipen = 999)
+# Create a linear model from the resulting quality rating and all features
+model <- lm(quality ~ fixed.acidity + volatile.acidity + citric.acid + residual.sugar + chlorides + free.sulfur.dioxide + total.sulfur.dioxide + density + pH + sulphates + alcohol, data=df) 
+# Display the summary
+summary(model)
+```
+From the linear regression model we can say that volatile.acidity, chlorides, total.sulfur.dioxide, sulphates and alcohol are the most important features for predicting the experts\' quality ratings. 
+
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+According to the Pearson correlation analysis the strongest correlations with quality could be found for alcohol, volatile.acidity and sulphates. While alcohol had the strongest relationship with quality, in addtion with sulphates and citric.acid the quality results results seem even better. 
+
+### Were there any interesting or surprising interactions between features?
+The influence of the combination of citric acid and alcohol on experts\'s quality rating was surprising to me. 
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+I trained a linear regression model. The most important features for the regression are:<br>
+* chlorides<br>
+* total.sulfur.dioxide<br>
+* sulphates<br>
+* alcohol<br>
+All of the features already showed significance during facet grid examination. 
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r message=FALSE, echo=FALSE, Plot_One}
+ggplot(aes(y = alcohol), data = df) +
+  geom_boxplot(color = 'red', fill = 'orange', alpha=0.6) +
+  ggtitle('Influence of alcohol distribution on experts\'s quality rating') +
+  facet_grid(~df$quality)
+```
+
+### Description One
+The first chart visualizes the relationship of the alcohol concentration in red wine and the experts\'s quality rating of the wine. Although there is a gap for the experts\'s rating of 5 a clear linear relationship can be observed.
+
+### Plot Two
+```{r message=FALSE, echo=FALSE}
+# Add a scatterplot 
+ggplot(aes(y = alcohol, x = sulphates, color = as.factor(quality) ), data = df) + 
+  # Adjust the coloring
+  scale_color_manual(values = brewer.pal(n = 6, name = 'YlOrBr'), name = "quality") +
+  geom_point() +
+  ggtitle('Correlation of alcohol and sulphates including quality') 
+```
+
+### Description Two
+This scatterplot visualizes the relationship between alcohol and suphates. The color saturation shows that good wines tend to have higher alcohol and higher sulphates concentration.
+
+### Plot Three
+```{r echo=FALSE}
+# Add a scatterplot
+ggplot(aes(y = alcohol, x = citric.acid, color = as.factor(quality) ), data = df) + 
+  # Adjust the coloring
+  scale_color_manual(values = brewer.pal(n = 6, name = 'YlOrBr'), name = "quality") +
+  geom_point() +
+  ggtitle('Correlation of alcohol and citric.acid including quality') 
+```
+
+### Description Three
+This scatterplot visualizes the relationship between alcohol and citric.acid. Based on the data we can say that higher concentration of alcohol and higher concentration of citric.acid results in better experts\' quality ratings. 
+
+------
+
+# Reflection
+
+In the first step I inspected the histograms to get a first idea of the data. It was not possible to draw conclusions about which ingredients are responsible for good ratings. Breaking down the data using facet grid exploration helped to gain these insights. It became clear which features seem to influence the ratings in a positive or negative way. 
+To find correlations between the features itself and the the experts\'s rating a Pearson analysis has been made. Alcohol showed the biggest direct influence on the quality ratings. The fact was suprising that alcohol was the only feature that had a big influence on the experts\' ratings. 
+It was difficult to detect supporting features just by looking at the scatter plots. Therefore a Linear Regression Model has been calculated to help finding the supporting features. With the of the most important features for the linear regression model the final plots have been prepared and selected. 
+
+
+# Appendix
+
+### Sources
+* http://www.sthda.com/english/wiki/amazing-interactive-3d-scatter-plots-r-software-and-data-visualization
+* https://www.rdocumentation.org/packages/base/versions/3.5.2/topics/with
+* https://stackoverflow.com/questions/15589601/print-string-and-variable-contents-on-the-same-line-in-r
+* https://www.statmethods.net/advgraphs/correlograms.html
+* http://www.sthda.com/english/wiki/ggcorrplot-visualization-of-a-correlation-matrix-using-ggplot2
+* https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html
+
+
+### Attribute information
+
+#### Input variables (based on physicochemical tests):
+1 - fixed acidity (tartaric acid - g / dm^3)<br>
+2 - volatile acidity (acetic acid - g / dm^3)<br>
+3 - citric acid (g / dm^3)<br>
+4 - residual sugar (g / dm^3)<br>
+5 - chlorides (sodium chloride - g / dm^3<br>
+6 - free sulfur dioxide (mg / dm^3)<br>
+7 - total sulfur dioxide (mg / dm^3)<br>
+8 - density (g / cm^3)<br>
+9 - pH<br>
+10 - sulphates (potassium sulphate - g / dm3)<br>
+11 - alcohol (% by volume)<br><br>
+
+#### Output variable (based on sensory data): 
+12 - quality (score between 0 and 10)<br>
+<br>
+
+### Description of attributes:
+1 - fixed acidity: most acids involved with wine or fixed or nonvolatile (do not evaporate readily) <br>
+2 - volatile acidity: the amount of acetic acid in wine, which at too high of levels can lead to an unpleasant, vinegar taste<br>
+3 - citric acid: found in small quantities, citric acid can add 'freshness' and flavor to wines<br>
+4 - residual sugar: the amount of sugar remaining after fermentation stops, it's rare to find wines with less than 1 gram/liter and wines with greater than 45 grams/liter are considered sweet<br>
+5 - chlorides: the amount of salt in the wine<br>
+6 - free sulfur dioxide: the free form of SO2 exists in equilibrium between molecular SO2 (as a dissolved gas) and bisulfite ion; it prevents microbial growth and the oxidation of wine<br>
+7 - total sulfur dioxide: amount of free and bound forms of S02; in low concentrations, SO2 is mostly undetectable in wine, but at free SO2 concentrations over 50 ppm, SO2 becomes evident in the nose and taste of wine<br>
+8 - density: the density of water is close to that of water depending on the percent alcohol and sugar content<br>
+9 - pH: describes how acidic or basic a wine is on a scale from 0 (very acidic) to 14 (very basic); most wines are between 3-4 on the pH scale<br>
+10 - sulphates: a wine additive which can contribute to sulfur dioxide gas (S02) levels, wich acts as an antimicrobial and antioxidant<br>
+11 - alcohol: the percent alcohol content of the wine<br>
+
+Output variable (based on sensory data): <br>
+12 - quality (score between 0 and 10)<br>
